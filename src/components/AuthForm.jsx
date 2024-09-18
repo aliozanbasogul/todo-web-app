@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import "../styles/Form.css"; // Assuming this holds the provided styles
+import "../styles/Form.css"; 
 
 const AuthForm = ({ formType, handleSubmit, resetFields }) => {
   const [email, setEmail] = useState("");
