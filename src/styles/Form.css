@@ -39,6 +39,7 @@
     width: 100%;
     box-sizing: border-box;
     padding: 10px;
+    color: black;
     margin-top: 5px;
     border: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: 5px;
@@ -93,10 +94,6 @@
 /*GOOGLE CSS*/
 
 .gsi-material-button {
-    -moz-user-select: none;
-    -webkit-user-select: none;
-    -ms-user-select: none;
-    -webkit-appearance: none;
     background-color: white;
     background-image: none;
     border: 1px solid #747775;

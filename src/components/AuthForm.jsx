@@ -1,7 +1,20 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import "../styles/Form.css"; // Assuming this holds the provided styles
 
-const AuthForm = ({ formType, handleSubmit }) => {
+const AuthForm = ({ formType, handleSubmit, resetFields }) => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  // Effect to reset form fields when switching between forms
+  useEffect(() => {
+    if (resetFields) {
+      setEmail("");
+      setPassword("");
+      setConfirmPassword("");
+    }
+  }, [resetFields]);
+
   const googleIcon = (
     <button className="gsi-material-button">
       <div className="gsi-material-button-state"></div>
@@ -33,30 +46,53 @@ const AuthForm = ({ formType, handleSubmit }) => {
             <path fill="none" d="M0 0h48v48H0z"></path>
           </svg>
         </div>
-        <span
-          className="gsi-material-button-contents"
-          style={{ display: "none" }}
-        >
-          Sign in with Google
-        </span>
       </div>
     </button>
   );
 
+  const onSubmit = (e) => {
+    e.preventDefault();
+    handleSubmit(email, password); // Pass the email and password to the parent
+  };
+
   return (
     <div className="form-container">
       <h1>{formType}</h1>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={onSubmit}>
         <div className="input-group">
           <label>Email</label>
-          <input type="email" placeholder="Enter your email" required />
+          <input
+            type="email"
+            placeholder="Enter your email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
         </div>
         <div className="input-group">
           <label>Password</label>
-          <input type="password" placeholder="Enter your password" required />
+          <input
+            type="password"
+            placeholder="Enter your password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
         </div>
 
-        {/* Actions container for Forgot Password and Google Sign In */}
+        {formType === "Register" && (
+          <div className="input-group">
+            <label>Confirm Password</label>
+            <input
+              type="password"
+              placeholder="Confirm your password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+            />
+          </div>
+        )}
+
         {formType === "Login" && (
           <div className="actions-container">
             <a href="/forgot-password" className="forgot-password-link">
@@ -67,8 +103,7 @@ const AuthForm = ({ formType, handleSubmit }) => {
             </a>
           </div>
         )}
-        
-        {/* Center the Google Sign-In button in Register form */}
+
         {formType === "Register" && (
           <div className="actions-container center">
             <a href="/google-sign-in" className="google-sign-in">
