@@ -1,20 +1,25 @@
 import React, { useState, useEffect } from "react";
 import Switch from "./Switch.jsx";
-import AuthForm from "./AuthForm"; 
-import "../styles/Form.css"; 
-import "../styles/Switch.css"; 
+import AuthForm from "./AuthForm";
+import "../styles/Form.css";
+import "../styles/Switch.css";
 import FirebaseMethods from "../auth/FirebaseMethods.js";
 import {
   getAuth,
   createUserWithEmailAndPassword,
   sendEmailVerification,
+  signInWithEmailAndPassword,
 } from "firebase/auth";
 import { auth } from "../auth/firebaseConfig.js";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css'; 
+import { BrowserRouter, Route, Routes, Navigate, useNavigate } from 'react-router-dom';
 
 const LoginRegister = () => {
   const [isChecked, setIsChecked] = useState(false);
-  const [resetFields, setResetFields] = useState(false); 
+  const [resetFields, setResetFields] = useState(false);
+
+  const navigate = useNavigate();
 
   // Toggle between Login and Register
   const handleToggle = () => {
@@ -24,7 +29,7 @@ const LoginRegister = () => {
 
   useEffect(() => {
     if (resetFields) {
-      setResetFields(false); 
+      setResetFields(false);
     }
   }, [resetFields]);
 
@@ -33,36 +38,49 @@ const LoginRegister = () => {
       console.log("Register form submitted", email, password);
       try {
         await handleRegister(email, password);
-        console.log("Registration successful");
+        toast.success("Registration successful! Please check your email for verification.");
+        navigate('/home');
       } catch (error) {
         console.log("Registration failed:", error.message);
+        toast.error("Registration failed.");
       }
     } else {
       console.log("Login form submitted", email, password);
+      await handleLogin(email, password);
+      toast.success("Login successful.");
     }
   };
 
-  // Handle user registration and email verification
   const handleRegister = async (email, password) => {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
       await sendEmailVerification(user);
-      toast.success("Email verification link sent to your email");
 
       const result = await FirebaseMethods.AddAuthUserToFirestore(auth, email, password);
 
-      if (result.success) {
-        toast.success("Account created successfully and added to Firestore!");
-      } else {
-        toast.error(result.message);
+      if (!result.success) {
+        throw new Error(result.message);
       }
     } catch (error) {
-      toast.error("Error during registration: " + error.message);
-      throw error; 
+      throw error;
     }
   };
+
+  const handleLogin = async (email, password) => {
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      navigate('/home');
+      if (!user.emailVerified) {
+        toast.info("Please verify your email before logging in.");
+        return;
+      }
+    } catch (error) {
+      throw error;
+    }
+  }
 
   return (
     <div style={{ textAlign: "center" }}>
@@ -71,6 +89,17 @@ const LoginRegister = () => {
         formType={isChecked ? "Register" : "Login"}
         handleSubmit={handleSubmit}
         resetFields={resetFields}
+      />
+      {/* Add ToastContainer to render the toast messages */}
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        rtl={false}
+        draggable
+        pauseOnHover
+        theme="colored"
       />
     </div>
   );
