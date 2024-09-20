@@ -9,11 +9,16 @@ import {
   createUserWithEmailAndPassword,
   sendEmailVerification,
   signInWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut,
+  onAuthStateChanged,
+  sendPasswordResetEmail,
 } from "firebase/auth";
 import { auth } from "../auth/firebaseConfig.js";
 import { toast, ToastContainer } from "react-toastify";
-import 'react-toastify/dist/ReactToastify.css'; 
-import { BrowserRouter, Route, Routes, Navigate, useNavigate } from 'react-router-dom';
+import "react-toastify/dist/ReactToastify.css";
+import { useNavigate } from "react-router-dom";
 
 const LoginRegister = () => {
   const [isChecked, setIsChecked] = useState(false);
@@ -21,7 +26,6 @@ const LoginRegister = () => {
 
   const navigate = useNavigate();
 
-  // Toggle between Login and Register
   const handleToggle = () => {
     setIsChecked(!isChecked);
     setResetFields(true);
@@ -33,13 +37,23 @@ const LoginRegister = () => {
     }
   }, [resetFields]);
 
-  const handleSubmit = async (email, password) => {
+  const handleSubmit = async (email, password, confirmPassword, username) => {
     if (isChecked) {
-      console.log("Register form submitted", email, password);
+      console.log("Register form submitted", email, password, confirmPassword);
+      if (password !== confirmPassword) {
+        toast.error("Passwords do not match!");
+        return;
+      }
+
       try {
-        await handleRegister(email, password);
-        toast.success("Registration successful! Please check your email for verification.");
-        navigate('/home');
+        await handleRegister(email, password, username);
+        toast.success(
+          "Registration successful! Please check your email for verification."
+        );
+        setTimeout(() => {
+          window.location.reload();
+          navigate("/authpage");
+        }, 5000);
       } catch (error) {
         console.log("Registration failed:", error.message);
         toast.error("Registration failed.");
@@ -47,22 +61,20 @@ const LoginRegister = () => {
     } else {
       console.log("Login form submitted", email, password);
       await handleLogin(email, password);
-      toast.success("Login successful.");
     }
   };
 
-  const handleRegister = async (email, password) => {
+  const handleRegister = async (email, password, username) => {
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
       const user = userCredential.user;
 
       await sendEmailVerification(user);
-
-      const result = await FirebaseMethods.AddAuthUserToFirestore(auth, email, password);
-
-      if (!result.success) {
-        throw new Error(result.message);
-      }
+      await FirebaseMethods.AddAuthUserToFirestore(auth, email, username);
     } catch (error) {
       throw error;
     }
@@ -70,17 +82,54 @@ const LoginRegister = () => {
 
   const handleLogin = async (email, password) => {
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      console.log("Attempting to log in with email:", email);
+
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
       const user = userCredential.user;
-      navigate('/home');
+
       if (!user.emailVerified) {
         toast.info("Please verify your email before logging in.");
         return;
+      } else {
+        navigate("/home");
       }
     } catch (error) {
-      throw error;
+      console.error("Error details:", error);
+      const errorCode = error.code;
+
+      switch (errorCode) {
+        case "auth/invalid-email":
+          toast.error("Invalid email format. Please check your email.");
+          break;
+        case "auth/user-not-found":
+          toast.error("User not found. Please register.");
+          break;
+        case "auth/wrong-password":
+          toast.error("Incorrect password. Please try again.");
+          break;
+        default:
+          toast.error("Login failed. Please try again.");
+          console.log("Login failed:", error.message);
+          break;
+      }
     }
-  }
+  };
+
+  const handleGoogleSignIn = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      console.log("Google sign in successful:", user);
+      navigate("/home");
+    } catch (error) {
+      console.log("Google sign in failed:", error.message);
+    }
+  };
 
   return (
     <div style={{ textAlign: "center" }}>
@@ -88,9 +137,9 @@ const LoginRegister = () => {
       <AuthForm
         formType={isChecked ? "Register" : "Login"}
         handleSubmit={handleSubmit}
+        handleGoogleSubmit={handleGoogleSignIn}
         resetFields={resetFields}
       />
-      {/* Add ToastContainer to render the toast messages */}
       <ToastContainer
         position="top-right"
         autoClose={5000}

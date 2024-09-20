@@ -1,17 +1,24 @@
 import React, { useState, useEffect } from "react";
-import "../styles/Form.css"; 
+import "../styles/Form.css";
+import { useNavigate, Navigate } from "react-router-dom";
 
-const AuthForm = ({ formType, handleSubmit, resetFields }) => {
+const AuthForm = ({
+  formType,
+  handleSubmit,
+  handleGoogleSubmit,
+  resetFields,
+}) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [username, setUsername] = useState("");
 
-  // Effect to reset form fields when switching between forms
   useEffect(() => {
     if (resetFields) {
       setEmail("");
       setPassword("");
       setConfirmPassword("");
+      setUsername("");
     }
   }, [resetFields]);
 
@@ -50,9 +57,16 @@ const AuthForm = ({ formType, handleSubmit, resetFields }) => {
     </button>
   );
 
+  const navigate = useNavigate();
+
+  const handleForgetPasswordSubmit = (e) => {
+    e.preventDefault();
+    navigate("/forgot-password");
+  };
+
   const onSubmit = (e) => {
     e.preventDefault();
-    handleSubmit(email, password); // Pass the email and password to the parent
+    handleSubmit(email, password, confirmPassword, username);
   };
 
   return (
@@ -69,6 +83,19 @@ const AuthForm = ({ formType, handleSubmit, resetFields }) => {
             required
           />
         </div>
+        {formType === "Register" && (
+          <div className="input-group">
+            <label>Username</label>
+            <input
+              type="text"
+              placeholder="Enter your username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+            />
+          </div>
+        )}
+
         <div className="input-group">
           <label>Password</label>
           <input
@@ -79,7 +106,6 @@ const AuthForm = ({ formType, handleSubmit, resetFields }) => {
             required
           />
         </div>
-
         {formType === "Register" && (
           <div className="input-group">
             <label>Confirm Password</label>
@@ -95,10 +121,18 @@ const AuthForm = ({ formType, handleSubmit, resetFields }) => {
 
         {formType === "Login" && (
           <div className="actions-container">
-            <a href="/forgot-password" className="forgot-password-link">
+            <a
+              href="/forgot-password"
+              className="forgot-password-link"
+              onClick={handleForgetPasswordSubmit}
+            >
               Forgot Password?
             </a>
-            <a href="/google-sign-in" className="google-sign-in">
+            <a
+              href="/google-sign-in"
+              className="google-sign-in"
+              onClick={handleGoogleSubmit}
+            >
               {googleIcon}
             </a>
           </div>
@@ -106,7 +140,11 @@ const AuthForm = ({ formType, handleSubmit, resetFields }) => {
 
         {formType === "Register" && (
           <div className="actions-container center">
-            <a href="/google-sign-in" className="google-sign-in">
+            <a
+              href="/google-sign-in"
+              className="google-sign-in"
+              onClick={handleGoogleSubmit}
+            >
               {googleIcon}
             </a>
           </div>

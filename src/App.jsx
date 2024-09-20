@@ -5,18 +5,20 @@ import './App.css'
 import './styles/Switch.css'
 import './styles/Form.css'
 import LoginRegister from './components/LoginRegister.jsx'
+import ForgotPassword from './components/ForgotPassword.jsx'
 import Home from './components/Home.jsx'
-import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
 function App() {
-  const [count, setCount] = useState(0)
 
   return (
     <>
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<LoginRegister />} />
+          <Route path="/authpage" element={<LoginRegister />} />
           <Route path="/home" element={<Home />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} /> 
         </Routes>
       </BrowserRouter>
     </>
