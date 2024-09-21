@@ -41,6 +41,10 @@
     scrollbar-color: #65696d #3f4750;
 }
 
+.sidebar-item:hover {
+    background-color: #4f5b66;
+}   
+
 .sidebar-item {
     display: flex;
     align-items: center;
@@ -120,6 +124,14 @@
     background-color: #3f4750;
     border-color: white;
     color: yel
+}
+
+.input-new-list {
+    width: 100%;
+    padding: 0.5rem;
+    margin: 0.5rem 0;
+    border: 1px solid #4f5b66;
+    border-radius: 5px;
 }
 
 
