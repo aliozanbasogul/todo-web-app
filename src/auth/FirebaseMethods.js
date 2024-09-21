@@ -18,12 +18,13 @@ class FirebaseMethods {
 
       console.log(`Saving user to Firestore: ${email}, UID: ${userUid}`);
 
-      const userObj = new User(email, username, new Date());
+      const userObj = new User(email, username, new Date(), []);
 
       await setDoc(userDocRef, {
         email: userObj.email,
         username: userObj.username,
-        createdAt: userObj.createdAt
+        createdAt: userObj.createdAt,
+        lists: userObj.lists
       });
 
       console.log("User added to Firestore successfully.");
@@ -62,6 +63,103 @@ class FirebaseMethods {
       return { success: false, message: error.message }; 
     }
   }
+
+  static async SaveListToUser(auth, newList) {
+    try {
+      const user = auth.currentUser;
+      const userUid = user ? user.uid : null;
+  
+      if (!userUid) {
+        console.error("User is not authenticated, cannot save list to Firestore.");
+        return { success: false, message: "User is not authenticated" };
+      }
+  
+      const userDocRef = doc(db, "users", userUid);
+      
+      const userDoc = await getDoc(userDocRef);
+      let currentLists = [];
+  
+      if (userDoc.exists() && userDoc.data().lists) {
+        currentLists = userDoc.data().lists;
+      }
+  
+      const updatedLists = [...currentLists, newList];
+  
+      await setDoc(userDocRef, {
+        lists: updatedLists
+      }, { merge: true });
+  
+      console.log("List saved to user in Firestore successfully.");
+      return { success: true, message: "List saved to user in Firestore successfully" };
+    } catch (error) {
+      console.error("Error saving list to user in Firestore: ", error.message);
+      return { success: false, message: error.message };
+    }
+  }
+  
+
+  static async GetListsFromUser(auth) {
+    try {
+      const user = auth.currentUser;
+      const userUid = user ? user.uid : null;
+
+      if (!userUid) {
+        console.error("User is not authenticated, cannot get lists from Firestore.");
+        return { success: false, message: "User is not authenticated" };
+      }
+
+      const userDocRef = doc(db, "users", userUid);
+
+      console.log(`Getting lists from user in Firestore: UID: ${userUid}`);
+
+      const userDoc = await getDoc(userDocRef); 
+
+      if (userDoc.exists()) {
+        console.log("Lists found in Firestore.");
+        return { success: true, message: "Lists found in Firestore", lists: userDoc.data().lists };
+      } else {
+        console.error("Lists not found in Firestore.");
+        return { success: false, message: "Lists not found in Firestore" };
+      }
+    } catch (error) {
+      console.error("Error getting lists from Firestore: ", error.message);
+      return { success: false, message: error.message }; 
+    }
+  };
+
+  static async DeleteListFromUser(auth, listName) {
+    try {
+      const user = auth.currentUser;
+      const userUid = user ? user.uid : null;
+
+      if (!userUid) {
+        console.error("User is not authenticated, cannot delete list from Firestore.");
+        return { success: false, message: "User is not authenticated" };
+      }
+
+      const userDocRef = doc(db, "users", userUid);
+
+      const userDoc = await getDoc(userDocRef);
+      let currentLists = [];
+
+      if (userDoc.exists() && userDoc.data().lists) {
+        currentLists = userDoc.data().lists;
+      }
+
+      const updatedLists = currentLists.filter((list) => list.name !== listName);
+
+      await setDoc(userDocRef, {
+        lists: updatedLists
+      }, { merge: true });
+
+      console.log("List deleted from user in Firestore successfully.");
+      return { success: true, message: "List deleted from user in Firestore successfully" };
+    } catch (error) {
+      console.error("Error deleting list from user in Firestore: ", error.message);
+      return { success: false, message: error.message };
+    }
+  };
+
 }
 
 export default FirebaseMethods;
