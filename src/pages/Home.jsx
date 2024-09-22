@@ -8,28 +8,25 @@ import "../styles/Home.css";
 
 export default function Home() {
   const [selectedList, setSelectedList] = useState(null);
-  const [lists, setLists] = useState([]); // Tüm listeler için state
-  const navigate = useNavigate(); // Yönlendirme için useNavigate hook'u
+  const [lists, setLists] = useState([]); 
+  const navigate = useNavigate();
 
-  // Kullanıcı doğrulaması
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (!user) {
-        // Eğer kullanıcı oturum açmamışsa authpage sayfasına yönlendir
         navigate("/authpage");
       }
     });
-    return () => unsubscribe(); // Component unmount olunca temizleme
+    return () => unsubscribe(); 
   }, [navigate]);
 
-  // Kullanıcının tüm listelerini Firestore'dan al
   useEffect(() => {
     const fetchUserLists = async () => {
       const auth = getAuth();
       const result = await FirebaseMethods.GetListsFromUser(auth);
       if (result.success) {
-        setLists(result.lists); // Firestore'dan gelen listeleri state'e at
+        setLists(result.lists); 
       } else {
         console.error("Error fetching lists: ", result.message);
       }
@@ -37,7 +34,6 @@ export default function Home() {
     fetchUserLists();
   }, []);
 
-  // Yeni item ekleme işlemi
   const handleAddItem = async (item) => {
     const auth = getAuth();
     if (selectedList && item.trim()) {
@@ -50,17 +46,16 @@ export default function Home() {
         if (result.success) {
           console.log("Item added successfully");
 
-          // Listeyi güncelle
           const updatedList = {
             ...selectedList,
             items: [...selectedList.items, item],
           };
-          setSelectedList(updatedList); // UI'yı hemen güncelle
+          setSelectedList(updatedList); 
           setLists(
             lists.map((list) =>
               list.name === updatedList.name ? updatedList : list
             )
-          ); // Sidebar listelerini güncelle
+          ); 
         } else {
           console.error(result.message);
         }
@@ -72,7 +67,6 @@ export default function Home() {
     }
   };
 
-  // Liste öğesini düzenleme işlemi
   const handleEditItem = async (index, newValue) => {
     const auth = getAuth();
     if (selectedList && newValue.trim()) {
@@ -86,19 +80,18 @@ export default function Home() {
         if (result.success) {
           console.log("Item edited successfully");
 
-          // Listeyi güncelle
           const updatedList = {
             ...selectedList,
             items: selectedList.items.map((item, i) =>
               i === index ? newValue : item
             ),
           };
-          setSelectedList(updatedList); // UI'yı hemen güncelle
+          setSelectedList(updatedList); 
           setLists(
             lists.map((list) =>
               list.name === updatedList.name ? updatedList : list
             )
-          ); // Sidebar listelerini güncelle
+          ); 
         } else {
           console.error(result.message);
         }
@@ -110,7 +103,6 @@ export default function Home() {
     }
   };
 
-  // Liste adını düzenleme işlemi
   const handleEditListName = async (newName) => {
     const auth = getAuth();
     if (selectedList && newName.trim()) {
@@ -123,12 +115,12 @@ export default function Home() {
         if (result.success) {
           console.log("List name edited successfully");
           const updatedList = { ...selectedList, name: newName };
-          setSelectedList(updatedList); // UI'yı hemen güncelle
+          setSelectedList(updatedList); 
           setLists(
             lists.map((list) =>
               list.name === selectedList.name ? updatedList : list
             )
-          ); // Sidebar'da liste adını güncelle
+          ); 
         } else {
           console.error(result.message);
         }
@@ -140,7 +132,6 @@ export default function Home() {
     }
   };
 
-  // Listeyi silme işlemi
   const handleDeleteList = async () => {
     const auth = getAuth();
     if (selectedList) {
@@ -151,8 +142,8 @@ export default function Home() {
         );
         if (result.success) {
           console.log("List deleted successfully");
-          setLists(lists.filter((list) => list.name !== selectedList.name)); // Sidebar'da listeden çıkar
-          setSelectedList(null); // UI'dan listeyi kaldır
+          setLists(lists.filter((list) => list.name !== selectedList.name)); 
+          setSelectedList(null); 
         } else {
           console.error(result.message);
         }
@@ -162,7 +153,6 @@ export default function Home() {
     }
   };
 
-  // Liste öğesini silme işlemi
   const handleDeleteItem = async (index) => {
     const auth = getAuth();
     if (selectedList) {
@@ -178,12 +168,12 @@ export default function Home() {
             ...selectedList,
             items: selectedList.items.filter((_, i) => i !== index),
           };
-          setSelectedList(updatedList); // UI'yı hemen güncelle
+          setSelectedList(updatedList); 
           setLists(
             lists.map((list) =>
               list.name === updatedList.name ? updatedList : list
             )
-          ); // Sidebar listelerini güncelle
+          ); 
         } else {
           console.error(result.message);
         }

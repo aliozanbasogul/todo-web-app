@@ -260,7 +260,6 @@ class FirebaseMethods {
 
       const userDocRef = doc(db, "users", userUid);
 
-      // Firestore'dan kullanıcının mevcut listesini alıyoruz
       const userDoc = await getDoc(userDocRef);
       let currentLists = [];
 
@@ -268,7 +267,6 @@ class FirebaseMethods {
         currentLists = userDoc.data().lists;
       }
 
-      // Listeyi buluyoruz ve belirtilen itemin adını güncelliyoruz
       const updatedLists = currentLists.map((list) => {
         if (list.name === listName) {
           return {
@@ -282,7 +280,6 @@ class FirebaseMethods {
         }
       });
 
-      // Firestore'daki güncellenmiş listeyi kaydediyoruz
       await setDoc(
         userDocRef,
         {
@@ -314,7 +311,6 @@ class FirebaseMethods {
         return { success: false, message: "User is not authenticated" };
       }
 
-      // Kullanıcının dokümanını alıyoruz
       const userDocRef = doc(db, "users", userUid);
       const userDoc = await getDoc(userDocRef);
 
@@ -324,10 +320,8 @@ class FirebaseMethods {
         currentLists = userDoc.data().lists;
       }
 
-      // İlgili listeyi bul
       const updatedLists = currentLists.map((list) => {
         if (list.name === listName) {
-          // Listeden itemIndex'e göre itemi sil
           return {
             name: list.name,
             items: list.items.filter((_, index) => index !== itemIndex),
@@ -336,7 +330,6 @@ class FirebaseMethods {
         return list;
       });
 
-      // Firestore'a güncellenen listeyi kaydediyoruz
       await setDoc(
         userDocRef,
         {

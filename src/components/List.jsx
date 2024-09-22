@@ -7,7 +7,7 @@ import CancelIcon from "@mui/icons-material/Cancel";
 import FirebaseMethods from "../auth/FirebaseMethods";
 import { getAuth } from "firebase/auth";
 import { toast, ToastContainer } from "react-toastify";
-import "../styles/List.css"; // Ensure you import the correct CSS
+import "../styles/List.css"; 
 
 const List = ({
   list,
@@ -21,21 +21,18 @@ const List = ({
   const [completedItems, setCompletedItems] = useState([]);
   const [editIndex, setEditIndex] = useState(null);
   const [editValue, setEditValue] = useState("");
-  const [isEditingListName, setIsEditingListName] = useState(false); // Liste adı düzenleme durumu
-  const [newListName, setNewListName] = useState(list.name); // Yeni liste adı
+  const [isEditingListName, setIsEditingListName] = useState(false); 
+  const [newListName, setNewListName] = useState(list.name); 
 
-  // Handles the change in input when adding a new item
   const handleInputChange = (e) => {
     setInputValue(e.target.value);
   };
 
-  // Adds a new item to the list
   const onAddItemClick = () => {
     handleAddItem(inputValue);
-    setInputValue(""); // Clears the input field
+    setInputValue(""); 
   };
 
-  // Toggles the completion state of the list item
   const handleCheckboxClick = (index) => {
     setCompletedItems((prevState) =>
       prevState.includes(index)
@@ -44,13 +41,11 @@ const List = ({
     );
   };
 
-  // Switches the list item into edit mode
   const handleEditClick = (index, item) => {
     setEditIndex(index);
     setEditValue(item);
   };
 
-  // Saves the edited item
   const handleSaveEdit = async (index) => {
     const auth = getAuth();
     if (list && editValue.trim()) {
@@ -71,7 +66,7 @@ const List = ({
           };
           handleEditItem(editIndex, editValue);
           setEditIndex(null);
-          setEditValue(""); // Düzenleme değerini sıfırla
+          setEditValue(""); 
         } else {
           console.error(result.message);
         }
@@ -81,7 +76,6 @@ const List = ({
     }
   };
 
-  // Saves the edited list name
   const handleSaveListName = async () => {
     const auth = getAuth();
     if (newListName.trim()) {
@@ -93,8 +87,8 @@ const List = ({
         );
         if (result.success) {
           toast.success("List name edited successfully");
-          handleEditListName(newListName); // Parent componenti güncelle
-          setIsEditingListName(false); // Düzenleme modundan çık
+          handleEditListName(newListName); 
+          setIsEditingListName(false); 
         } else {
           console.error(result.message);
         }
@@ -104,7 +98,6 @@ const List = ({
     }
   };
 
-  // Cancels the edit mode
   const handleCancelEdit = () => {
     setEditIndex(null);
     setEditValue("");
@@ -124,11 +117,11 @@ const List = ({
                 placeholder="Enter new list name"
               />
               <CheckIcon
-                className="edit-list-icon" // Düzenleme ve onay butonlarının sınıfını kullan
+                className="edit-list-icon" 
                 onClick={handleSaveListName}
               />
               <CancelIcon
-                className="delete-list-icon" // İptal butonunun sınıfını kullan
+                className="delete-list-icon" 
                 onClick={() => setIsEditingListName(false)}
               />
             </div>
@@ -138,7 +131,7 @@ const List = ({
               <div className="list-actions">
                 <EditIcon
                   style={{ cursor: "pointer" }}
-                  onClick={() => setIsEditingListName(true)} // Liste adı düzenleme moduna geç
+                  onClick={() => setIsEditingListName(true)} 
                   className="edit-list-icon"
                 />
                 <DeleteIcon

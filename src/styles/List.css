@@ -30,14 +30,14 @@
 
 .list-header .list-actions {
   display: flex;
-  align-items: center; /* Dikey hizalama */
+  align-items: center; 
   gap: 10px;
   color: #181c14;
   margin-right: 0.3em;
 }
 
 .list-actions .edit-list-icon, .list-actions .delete-list-icon {
-  font-size: 1.5rem; /* İkonların boyutunu sabitleyin */
+  font-size: 1.5rem; 
   cursor: pointer;
 }
 

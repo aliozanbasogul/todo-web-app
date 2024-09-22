@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; // useNavigate import et
+import { useNavigate } from "react-router-dom"; 
 import "../styles/Sidebar.css";
 import MenuIcon from "@mui/icons-material/Menu";
 import PersonIcon from "@mui/icons-material/Person";
@@ -16,14 +16,13 @@ const Sidebar = ({ lists, onSelectList, setLists }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [newListName, setNewListName] = useState("");
   const [addingNewList, setAddingNewList] = useState(false);
-  const [userProfile, setUserProfile] = useState(null); // Kullanıcı profili bilgisi için state
+  const [userProfile, setUserProfile] = useState(null); 
   const auth = getAuth();
-  const navigate = useNavigate(); // useNavigate hook'u yönlendirme için kullanılır.
+  const navigate = useNavigate(); 
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
-        // Kullanıcı profilini Firestore'dan çekiyoruz
         const result = await FirebaseMethods.GetUserFromFirestore(auth);
         if (result.success) {
           setUserProfile(result.user); 
@@ -33,11 +32,11 @@ const Sidebar = ({ lists, onSelectList, setLists }) => {
         }
       } else {
         setUserProfile(null);
-        navigate("/authpage"); // Kullanıcı oturum açmamışsa yönlendirme yap
+        navigate("/authpage"); 
       }
     });
 
-    return () => unsubscribe(); // component unmount olunca temizle
+    return () => unsubscribe(); 
   }, [auth, navigate]);
 
   const toggleSidebar = () => {
@@ -65,7 +64,7 @@ const Sidebar = ({ lists, onSelectList, setLists }) => {
       );
       if (result.success) {
         console.log("List added successfully");
-        setLists((prevLists) => [...prevLists, newList]); // Listeye yeni listeyi ekle
+        setLists((prevLists) => [...prevLists, newList]); 
         setNewListName("");
         setAddingNewList(false);
         toast.success("List created successfully!");
@@ -90,12 +89,11 @@ const Sidebar = ({ lists, onSelectList, setLists }) => {
     setNewListName("");
   };
 
-  // Sign out işlemi
   const handleSignOut = async () => {
     try {
-      await signOut(auth); // Firebase'den çıkış yap
+      await signOut(auth); 
       toast.success("Signed out successfully!");
-      navigate("/authpage"); // Çıkış yapıldıktan sonra yönlendirme
+      navigate("/authpage"); 
     } catch (error) {
       toast.error("Error signing out, try again!");
       console.error("Error signing out: ", error);

@@ -1,4 +1,3 @@
-// Switch.jsx
 import React, { useState } from "react";
 
 const Switch = ({ isChecked, handleToggle }) => {

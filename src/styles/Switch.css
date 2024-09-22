@@ -51,24 +51,24 @@
     font-weight: bold;
     color: black;
     transition: 0.4s;
-    position: absolute; /* Absolute positioning for each text */
-    width: 50%; /* Ensure each text takes 50% of the slider */
-    text-align: center; /* Center the text */
+    position: absolute; 
+    width: 50%; 
+    text-align: center; 
   }
   
   .text-left {
-    left: 0; /* Positioned on the left */
+    left: 0; 
   }
   
   .text-right {
-    right: 0; /* Positioned on the right */
+    right: 0;
   }
   
   input:checked + .slider .text-left {
-    color: rgba(177, 169, 220, 0.571); /* Fades out when Register is active */
+    color: rgba(177, 169, 220, 0.571);
   }
   
   input:not(:checked) + .slider .text-right {
-    color: rgba(177, 169, 220, 0.571); /* Fades out when Register is active */
+    color: rgba(177, 169, 220, 0.571); 
   }
   

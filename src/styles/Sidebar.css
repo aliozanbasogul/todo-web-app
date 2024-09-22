@@ -22,11 +22,10 @@
     width: 60px;
 }
 
-/* Add margin-top to move the profile and lists lower */
 .sidebar-list-profile {
     list-style-type: none;
     padding: 0;
-    margin: 3rem 0  0; /* Move the profile section 50px lower */
+    margin: 3rem 0  0; 
     flex: 0 0 auto;
     border-bottom: 2px solid #4f5b66;
 }
@@ -135,7 +134,6 @@
 }
 
 
-/* Apply responsiveness for mobile devices */
 @media (max-width: 768px) {
     .sidebar.open {
         width: 75%;
