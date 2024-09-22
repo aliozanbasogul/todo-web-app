@@ -9,11 +9,23 @@ import ForgotPassword from './pages/ForgotPassword.jsx'
 import CreateList from './pages/CreateList.jsx'
 import Home from './pages/Home.jsx'
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
 
 function App() {
 
   return (
     <>
+    <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={true}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        theme="colored"
+        draggable
+        pauseOnHover
+      />
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<LoginRegister />} />

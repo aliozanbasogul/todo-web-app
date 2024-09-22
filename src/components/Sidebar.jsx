@@ -1,58 +1,48 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom"; // useNavigate import et
 import "../styles/Sidebar.css";
 import MenuIcon from "@mui/icons-material/Menu";
 import PersonIcon from "@mui/icons-material/Person";
-import LabelIcon from '@mui/icons-material/Label';
-import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
+import LabelIcon from "@mui/icons-material/Label";
+import CancelIcon from "@mui/icons-material/Cancel";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import PlaylistAddIcon from "@mui/icons-material/PlaylistAdd";
 import { ExitToApp } from "@mui/icons-material";
 import FirebaseMethods from "../auth/FirebaseMethods";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
-import List from "../entities/List"; 
+import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
 import { toast, ToastContainer } from "react-toastify";
 
-const Sidebar = ({ onSelectList }) => {
+const Sidebar = ({ lists, onSelectList, setLists }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [lists, setLists] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [newListName, setNewListName] = useState(""); // Yeni liste adı için state
-  const [addingNewList, setAddingNewList] = useState(false); // Yeni liste inputu gösterme state
+  const [newListName, setNewListName] = useState("");
+  const [addingNewList, setAddingNewList] = useState(false);
+  const [userProfile, setUserProfile] = useState(null); // Kullanıcı profili bilgisi için state
   const auth = getAuth();
-
-  const toggleSidebar = () => {
-    // Eğer yeni liste ekleme süreci aktifse, sidebar'ı kapatma özelliğini devre dışı bırak
-    if (!addingNewList) {
-      setIsOpen(!isOpen);
-    }
-  };
+  const navigate = useNavigate(); // useNavigate hook'u yönlendirme için kullanılır.
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setIsAuthenticated(true);
-        fetchLists(user);
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        // Kullanıcı profilini Firestore'dan çekiyoruz
+        const result = await FirebaseMethods.GetUserFromFirestore(auth);
+        if (result.success) {
+          setUserProfile(result.user); 
+        } else {
+          console.error(result.message);
+          navigate("/authpage");
+        }
       } else {
-        setIsAuthenticated(false);
-        setLoading(false); 
+        setUserProfile(null);
+        navigate("/authpage"); // Kullanıcı oturum açmamışsa yönlendirme yap
       }
     });
 
-    return () => unsubscribe();
-  }, [auth]);
+    return () => unsubscribe(); // component unmount olunca temizle
+  }, [auth, navigate]);
 
-  const fetchLists = async (user) => {
-    try {
-      const result = await FirebaseMethods.GetListsFromUser(auth);
-      if (result.success) {
-        const listsData = result.lists.map(list => new List(list.name, list.items)); // List entity kullanımı
-        setLists(listsData);
-      } else {
-        console.error(result.message);
-      }
-    } catch (error) {
-      console.error("Error fetching lists: ", error);
-    } finally {
-      setLoading(false); 
+  const toggleSidebar = () => {
+    if (!addingNewList) {
+      setIsOpen(!isOpen);
     }
   };
 
@@ -60,29 +50,31 @@ const Sidebar = ({ onSelectList }) => {
     onSelectList(list);
   };
 
-  // Yeni liste ekleme fonksiyonu
   const handleAddList = async () => {
     if (!newListName.trim()) {
-      console.error("List name cannot be empty.");
+      toast.error("List name cannot be empty.");
       return;
     }
 
-    const newList = new List(newListName, []); 
+    const newList = new List(newListName, []);
     try {
-      const result = await FirebaseMethods.SaveListToUser(auth, newList.name, newList.items); // SaveListToUser'a doğrudan parametreler geçiriliyor
+      const result = await FirebaseMethods.SaveListToUser(
+        auth,
+        newList.name,
+        newList.items
+      );
       if (result.success) {
         console.log("List added successfully");
-        setLists((prevLists) => [...prevLists, newList]); // Listeyi güncelle
-        setNewListName(""); // Liste adı alanını temizleme
-        setAddingNewList(false); // Inputu gizle
-        fetchLists(auth.currentUser); // Yeni listeyi ekledikten sonra listeyi tekrar al
+        setLists((prevLists) => [...prevLists, newList]); // Listeye yeni listeyi ekle
+        setNewListName("");
+        setAddingNewList(false);
         toast.success("List created successfully!");
       } else {
-        toast.error("Error creating list try again!");
+        toast.error("Error creating list, try again!");
         console.error(result.message);
       }
     } catch (error) {
-      toast.error("Error creating list try again!");
+      toast.error("Error creating list, try again!");
       console.error("Error adding list: ", error);
     }
   };
@@ -90,6 +82,23 @@ const Sidebar = ({ onSelectList }) => {
   const handleAddListEnter = (e) => {
     if (e.key === "Enter") {
       handleAddList();
+    }
+  };
+
+  const handleAddListCancel = () => {
+    setAddingNewList(false);
+    setNewListName("");
+  };
+
+  // Sign out işlemi
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth); // Firebase'den çıkış yap
+      toast.success("Signed out successfully!");
+      navigate("/authpage"); // Çıkış yapıldıktan sonra yönlendirme
+    } catch (error) {
+      toast.error("Error signing out, try again!");
+      console.error("Error signing out: ", error);
     }
   };
 
@@ -104,16 +113,22 @@ const Sidebar = ({ onSelectList }) => {
         <ul className="sidebar-list-profile">
           <li className="sidebar-item">
             <PersonIcon className="sidebar-icon" />
-            {isOpen && <span>Profile</span>}
+            {isOpen && (
+              <span>
+                {userProfile?.username ? userProfile.username : userProfile?.email}
+              </span>
+            )}
           </li>
         </ul>
 
         <ul className="sidebar-list">
-          {loading ? (
-            <li className="sidebar-item">Loading...</li>
-          ) : isAuthenticated && lists.length > 0 ? (
+          {lists.length > 0 ? (
             lists.map((list, index) => (
-              <li key={index} className="sidebar-item" onClick={() => handleListItemClick(list)}>
+              <li
+                key={index}
+                className="sidebar-item"
+                onClick={() => handleListItemClick(list)}
+              >
                 <LabelIcon className="sidebar-icon" />
                 {isOpen && <span>{list.name}</span>}
               </li>
@@ -122,7 +137,6 @@ const Sidebar = ({ onSelectList }) => {
             <li className="sidebar-item">No lists found</li>
           )}
 
-          {/* Eğer yeni liste ekleme sürecindeysek input alanını göster */}
           {addingNewList && (
             <li className="sidebar-item">
               <LabelIcon className="sidebar-icon" />
@@ -131,31 +145,47 @@ const Sidebar = ({ onSelectList }) => {
                 type="text"
                 placeholder="New list name"
                 value={newListName}
-                onChange={(e) => setNewListName(e.target.value)} // Input alanı
-                onKeyDown={handleAddListEnter} // TODO: Cancel işlemi EKLE
+                onChange={(e) => setNewListName(e.target.value)}
+                onKeyDown={handleAddListEnter}
                 autoFocus
               />
-              <button onClick={handleAddList}>
-                <PlaylistAddIcon sx={{ fontSize: 'x-large' }} />
-              </button>
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "10px" }}
+              >
+                <CheckCircleIcon
+                  sx={{
+                    fontSize: "x-large",
+                    cursor: "pointer",
+                    ":hover": { color: "green" },
+                  }}
+                  onClick={handleAddList}
+                />
+                <CancelIcon
+                  sx={{
+                    fontSize: "x-large",
+                    cursor: "pointer",
+                    ":hover": { color: "red" },
+                  }}
+                  onClick={handleAddListCancel}
+                />
+              </div>
             </li>
           )}
         </ul>
 
-        {/* Yeni liste eklemek için buton */}
         <div className="add-list-btn">
-          {!addingNewList && ( // Yeni liste ekle butonunu sadece yeni liste eklenmediğinde göster
-            <button onClick={() => setAddingNewList(true)} >
-              <PlaylistAddIcon sx={{ fontSize: 'x-large' }} />
+          {!addingNewList && (
+            <button onClick={() => setAddingNewList(true)}>
+              <PlaylistAddIcon sx={{ fontSize: "x-large" }} />
             </button>
           )}
         </div>
 
-        <div className="logout">
+        <div className="logout" onClick={handleSignOut}>
           <ExitToApp className="sidebar-icon" />
         </div>
       </div>
-      <ToastContainer 
+      <ToastContainer
         position="top-right"
         autoClose={3000}
         hideProgressBar={false}

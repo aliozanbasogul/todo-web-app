@@ -124,12 +124,18 @@ const LoginRegister = () => {
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-      console.log("Google sign in successful:", user);
+  
+      const email = user.email;
+      const username = user.displayName || ""; 
+      await FirebaseMethods.AddAuthUserToFirestore(auth, email, username);
+  
+      console.log("Google sign in successful and user data saved:", user);
       navigate("/home");
     } catch (error) {
       console.log("Google sign in failed:", error.message);
     }
   };
+  
 
   return (
     <div style={{ textAlign: "center" }}>
