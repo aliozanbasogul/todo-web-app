@@ -26,7 +26,7 @@ function App() {
         draggable
         pauseOnHover
       />
-      <BrowserRouter>
+      <BrowserRouter basename={import.meta.env.BASE_URL}>
         <Routes>
           <Route path="/" element={<LoginRegister />} />
           <Route path="/authpage" element={<LoginRegister />} />
